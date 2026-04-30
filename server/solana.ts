@@ -17,6 +17,10 @@ function toPublicKey(value: string, fallback: string) {
 }
 
 export async function prepareDevnetTransfer({ intent, payer }: PrepareRequest) {
+  if (intent.token === "USDT") {
+    throw new Error("USDT is tracked in the payment intent, but the zero-dollar MVP only sends devnet SOL.");
+  }
+
   const fallbackKey = "11111111111111111111111111111111";
   const fromPubkey = toPublicKey(payer, fallbackKey);
   const toPubkey = toPublicKey(intent.recipientAddress, fallbackKey);
@@ -40,6 +44,7 @@ export async function prepareDevnetTransfer({ intent, payer }: PrepareRequest) {
     to: toPubkey.toBase58(),
     lamports,
     recentBlockhash: transaction.recentBlockhash ?? blockhash,
+    serializedTransaction: transaction.serialize({ requireAllSignatures: false }).toString("base64"),
     explorerUrl: `https://explorer.solana.com/address/${toPubkey.toBase58()}?cluster=devnet`
   };
 }

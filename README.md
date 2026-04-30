@@ -1,31 +1,36 @@
 # CloakPay AI
 
-Local-first payment intelligence for the Tether QVAC Frontier track.
+Zero-dollar, local-first payment firewall for the Tether QVAC Frontier track.
 
-CloakPay AI turns an invoice, receipt, or payment screenshot into a reviewed Solana devnet payment flow. The core product uses QVAC OCR locally to extract payment details, normalizes them into a payment intent, asks the user to confirm risky fields, and then prepares a Solana transaction plus a privacy receipt for the demo.
+CloakPay AI checks a Solana payment before the user signs it. It analyzes an invoice or payment screenshot locally with QVAC OCR, converts the extracted text into a payment intent, scores the risk, prepares a real Solana devnet transfer, and generates a privacy-safe receipt without using paid APIs, paid hosting, paid RPC, paid databases, or mainnet funds.
 
-## Why This Fits The Track
+## Winning Demo
 
-- Meaningful QVAC integration: OCR is the first product action, not a side demo.
-- Local-first privacy: invoice text is processed on-device before any transaction is prepared.
-- Solana-ready flow: the MVP targets devnet transfers first, then private-payment primitives later.
-- Demo-friendly: upload image, review extracted intent, prepare transaction, show receipt.
+1. Open the local app.
+2. Run the built-in sample invoice or upload a payment screenshot.
+3. Show QVAC/local analysis extracting merchant, recipient, amount, token, and memo.
+4. Show the payment firewall verdict: safe, review, or block.
+5. Connect a Solana wallet on devnet.
+6. Prepare, sign, and send devnet SOL.
+7. Show the explorer link and local privacy receipt.
 
-## Product Flow
+The story: private invoice data is analyzed locally before signing; Solana only receives the confirmed payment.
 
-1. Upload a payment image or invoice screenshot.
-2. QVAC OCR extracts text blocks locally.
-3. The backend converts those blocks into a `PaymentIntent`.
-4. The user confirms amount, recipient, token, and memo.
-5. The app prepares a Solana devnet transfer payload.
-6. The app generates a local privacy receipt with a commitment and nullifier preview.
+## Zero-Dollar Rules
+
+- No paid AI: QVAC SDK locally only.
+- No paid OCR: QVAC OCR or local deterministic fallback.
+- No paid RPC: public Solana devnet RPC only.
+- No paid database: browser state and local runtime only.
+- No paid assets: CSS and generated sample invoice only.
+- No mainnet funds: devnet SOL from faucet only.
 
 ## Tech Stack
 
 - Frontend: Vite, React, TypeScript.
 - Local API: Node.js, Express, TypeScript.
-- AI: `@qvac/sdk` OCR, with a mock fallback for development before model cache setup.
-- Blockchain: `@solana/web3.js` on devnet.
+- AI: `@qvac/sdk` OCR, with fallback mode for demo reliability.
+- Blockchain: `@solana/web3.js` on public devnet.
 
 ## Commands
 
@@ -34,24 +39,29 @@ npm install
 npm run dev
 ```
 
-For live QVAC OCR, set:
+Open:
 
 ```bash
-QVAC_MOCK=0
+http://127.0.0.1:5173/
 ```
 
-When `QVAC_MOCK` is unset, the backend currently stays in mock mode so the UI can be developed and recorded before the model download is complete.
+For live local QVAC OCR, start the API with:
+
+```bash
+QVAC_MOCK=0 npm run dev
+```
+
+Default mode keeps a clearly labeled local fallback so the demo can be rehearsed without waiting on model setup.
+
+## API
+
+- `GET /api/qvac/status`
+- `POST /api/qvac/analyze-payment`
+- `POST /api/solana/prepare`
+- `POST /api/privacy/receipt`
 
 ## Submission Notes
 
 - Track: Tether Frontier Hackathon Track on Superteam Earn.
 - Deadline from listing: May 11, 2026.
-- Winner announcement from listing: May 13, 2026 for this side track.
-- Public repo requirement: this repository is intended to be public.
-
-## Roadmap
-
-- Add wallet adapter UI for signing prepared devnet transactions.
-- Add QVAC LLM normalization after OCR for better ambiguous invoice handling.
-- Add a sample invoice generator for the demo.
-- Replace simulated privacy receipt with a concrete private-payment protocol integration.
+- Public repo: https://github.com/jerreenj/solana-tether-frontier

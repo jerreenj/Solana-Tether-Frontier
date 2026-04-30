@@ -1,73 +1,70 @@
-# Build Plan
+# CloakPay AI Zero-Dollar Build Plan
 
 ## Product
 
-CloakPay AI is a local-first payment assistant for Solana users. It reads invoice or payment images with QVAC OCR, extracts a payment intent, and helps the user prepare a devnet transfer while keeping sensitive invoice content on the user's machine.
+CloakPay AI is a local-first payment firewall for anyone sending crypto payments. The MVP focuses on Solana devnet: it analyzes invoice/payment data locally, flags risk before signing, sends a real devnet transaction, and produces a privacy receipt.
 
-## MVP Scope
+## Core Loop
 
-- Web app with four panels: upload, extraction, review, receipt.
-- Local Node API that owns QVAC model loading and OCR calls.
-- Payment intent parser for recipient, amount, token, and memo.
-- Devnet transaction preparation endpoint.
-- Simulated privacy receipt for demo narrative.
-- Public GitHub repo with clear setup and video path.
+1. User runs the local web app.
+2. User loads the free sample invoice or uploads an invoice image.
+3. QVAC OCR extracts text when live mode is enabled; fallback mode keeps demos reliable.
+4. Local risk engine scores the payment and explains the verdict.
+5. User reviews merchant, recipient, amount, token, and memo.
+6. User connects an injected Solana wallet.
+7. App prepares a devnet SOL transaction.
+8. Wallet signs and sends the transaction.
+9. App creates a local receipt with invoice hash, commitment, nullifier preview, and tx signature.
 
-## Submission Demo Script
+## Zero-Dollar Constraints
 
-1. Start the app locally.
-2. Upload a sample invoice image.
-3. Show QVAC OCR blocks and extracted payment intent.
-4. Edit/confirm fields that are ambiguous.
-5. Prepare the devnet transaction payload.
-6. Generate and show the privacy receipt.
-7. Explain that the user invoice content was processed locally before transaction preparation.
+- No paid AI, OCR, RPC, hosting, database, or assets.
+- No mainnet funds.
+- Use public devnet RPC and faucet SOL only.
+- Optional hosting must be free tier.
 
-## QVAC Integration
-
-Primary integration: OCR using `@qvac/sdk`.
-
-Planned second integration: local LLM completion to normalize messy OCR output and produce explanations for risk warnings. Keep OCR as the minimum working integration because it is directly tied to the core product behavior.
-
-## Architecture
-
-```mermaid
-flowchart LR
-  A["Invoice image"] --> B["React upload UI"]
-  B --> C["Local Node API"]
-  C --> D["QVAC OCR"]
-  D --> E["PaymentIntent parser"]
-  E --> F["User review"]
-  F --> G["Solana devnet transaction"]
-  F --> H["Privacy receipt"]
-```
-
-## Data Contracts
+## Interfaces
 
 ```ts
-export type PaymentIntent = {
+type PaymentIntent = {
   recipientAddress: string;
   amount: number;
-  token: "SOL" | "USDT";
+  token: "SOL" | "USDT" | "UNKNOWN";
   memo: string;
+  merchant: string;
   confidence: number;
+  sourceFields: SourceField[];
   warnings: string[];
 };
 
-export type PrivacyReceipt = {
+type RiskReport = {
+  score: number;
+  verdict: "safe" | "review" | "block";
+  warnings: string[];
+  explanation: string;
+  evidence: string[];
+};
+
+type PrivacyReceipt = {
+  invoiceHash: string;
   commitment: string;
   nullifierHash: string;
-  stealthLabel: string;
-  createdAt: string;
+  redactedSummary: string;
   txSignature?: string;
 };
 ```
 
-## Milestones
+## Demo Script
 
-1. Repo connected and README complete.
-2. UI and API scaffold runnable.
-3. Mock extraction demo polished.
-4. Live QVAC OCR model path verified.
-5. Wallet signing and devnet explorer link added.
-6. Video walkthrough recorded and submission packaged.
+Start with: "CloakPay AI is a local QVAC payment firewall. It checks the private invoice before the wallet signs."
+
+Then show: sample invoice -> local analysis -> risk verdict -> intent review -> wallet connect -> devnet sign/send -> privacy receipt.
+
+End with: "The invoice stayed local. The chain only got the confirmed payment."
+
+## Remaining Stretch Work
+
+- Add live QVAC LLM structured JSON analysis if model setup is stable.
+- Add QR-code payment screenshots.
+- Add SPL token devnet transfer path for USDT-like demo tokens.
+- Add a short recorded walkthrough and screenshots for Superteam submission.

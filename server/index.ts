@@ -1,6 +1,6 @@
 import express from "express";
 import { createPrivacyReceipt } from "./privacy";
-import { extractPaymentFromImage } from "./qvac";
+import { analyzePayment, getQvacStatus } from "./qvac";
 import { prepareDevnetTransfer } from "./solana";
 
 const app = express();
@@ -12,16 +12,20 @@ app.get("/api/health", (_request, response) => {
   response.json({ ok: true, service: "cloakpay-ai" });
 });
 
-app.post("/api/qvac/extract-payment", async (request, response) => {
+app.get("/api/qvac/status", (_request, response) => {
+  response.json(getQvacStatus());
+});
+
+app.post("/api/qvac/analyze-payment", async (request, response) => {
   try {
-    const { image, fileName } = request.body as { image?: string; fileName?: string };
-    if (!image) {
-      response.status(400).send("Missing image payload.");
+    const { image, text, fileName } = request.body as { image?: string; text?: string; fileName?: string };
+    if (!image && !text) {
+      response.status(400).send("Missing image or text payload.");
       return;
     }
-    response.json(await extractPaymentFromImage(image, fileName ?? "upload.png"));
+    response.json(await analyzePayment({ image, text, fileName: fileName ?? "payment-input" }));
   } catch (error) {
-    response.status(500).send(error instanceof Error ? error.message : "Extraction failed.");
+    response.status(500).send(error instanceof Error ? error.message : "Analysis failed.");
   }
 });
 
