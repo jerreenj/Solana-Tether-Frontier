@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "type": "module",
-  "description": "QVAC-powered local-first Solana payment assistant for the Tether Frontier track.",
+  "description": "Zero-dollar QVAC-powered local payment firewall for Solana devnet payments.",
   "scripts": {
     "dev": "concurrently \"npm:dev:api\" \"npm:dev:web\"",
     "dev:web": "vite --host 127.0.0.1 --port 5173",

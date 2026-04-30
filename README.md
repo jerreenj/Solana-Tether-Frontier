@@ -64,4 +64,4 @@ Default mode keeps a clearly labeled local fallback so the demo can be rehearsed
 
 - Track: Tether Frontier Hackathon Track on Superteam Earn.
 - Deadline from listing: May 11, 2026.
-- Public repo: https://github.com/jerreenj/solana-tether-frontier
+- Public repo: https://github.com/jerreenj/Solana-Tether-Frontier
