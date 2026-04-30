@@ -57,7 +57,7 @@ Default mode keeps a clearly labeled local fallback so the demo can be rehearsed
 
 ## Vercel
 
-The app can run on Vercel's free tier. The deployed version uses the same `/api` paths through serverless functions, so the safe/risky sample demo works without a separate paid backend.
+The app can run on Vercel's free tier. The deployed version uses the same `/api` paths through serverless functions, and the browser has a local fallback if hosted APIs are unavailable, so the safe/risky sample demo works without a separate paid backend.
 
 Live QVAC OCR should still be demoed locally with `QVAC_MOCK=0` when model setup is ready. The Vercel deploy is for the public product preview and fallback demo path.
 
@@ -72,4 +72,4 @@ Live QVAC OCR should still be demoed locally with `QVAC_MOCK=0` when model setup
 
 - Track: Tether Frontier Hackathon Track on Superteam Earn.
 - Deadline from listing: May 11, 2026.
-- Public repo: https://github.com/jerreenj/Solana-Tether-Frontier
+- Public repo: https://github.com/jerreenj/CloakPayAI-Solana-Tether

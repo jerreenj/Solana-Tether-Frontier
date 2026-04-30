@@ -1,5 +1,6 @@
-import { Connection, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useEffect, useMemo, useState } from "react";
+import { analyzeLocally, createLocalReceipt } from "./localAnalysis";
 import type { AnalysisResponse, PaymentIntent, PreparedTransaction, PrivacyReceipt, QvacStatus } from "./types";
 
 type SolanaProvider = {
@@ -58,6 +59,14 @@ function verdictLabel(verdict?: string) {
   return verdict.charAt(0).toUpperCase() + verdict.slice(1);
 }
 
+function toPublicKey(value: string, fallback: string) {
+  try {
+    return new PublicKey(value);
+  } catch {
+    return new PublicKey(fallback);
+  }
+}
+
 export default function App() {
   const [file, setFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -74,9 +83,22 @@ export default function App() {
 
   useEffect(() => {
     fetch("/api/qvac/status")
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) throw new Error("Hosted API unavailable.");
+        return response.json();
+      })
       .then((data: QvacStatus) => setQvacStatus(data))
-      .catch(() => setMessage("Could not read QVAC status."));
+      .catch(() => {
+        setQvacStatus({
+          localOnly: true,
+          mode: "fallback-demo",
+          ocrModel: "browser fallback",
+          llmModel: "browser-risk-engine",
+          paidServices: false,
+          notes: ["Hosted API unavailable; public preview is running in browser fallback mode."]
+        });
+        setMessage("Public preview ready in browser fallback mode.");
+      });
   }, []);
 
   const riskClass = analysis?.riskReport.verdict ?? "pending";
@@ -118,6 +140,8 @@ export default function App() {
   async function analyzePayment(useSampleText = false) {
     setBusy(true);
     setMessage(useSampleText ? "Running local sample analysis..." : "Running local payment firewall...");
+    const fallbackFileName = file ? file.name : "sample-invoice.txt";
+    const fallbackText = file && !useSampleText ? undefined : invoiceText;
     try {
       const payload = useSampleText
         ? { text: invoiceText, fileName: "sample-invoice.txt" }
@@ -139,7 +163,17 @@ export default function App() {
       setTxSignature("");
       setMessage(`${data.mode.toUpperCase()} analysis complete: ${verdictLabel(data.riskReport.verdict)}.`);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Analysis failed.");
+      const data = analyzeLocally({
+        text: fallbackText,
+        fileName: fallbackFileName,
+        browserFallback: true
+      });
+      setAnalysis(data);
+      setIntent(data.intent);
+      setPrepared(null);
+      setReceipt(null);
+      setTxSignature("");
+      setMessage("Hosted API unavailable, so CloakPay ran the payment firewall in your browser.");
     } finally {
       setBusy(false);
     }
@@ -170,7 +204,31 @@ export default function App() {
       setPrepared((await response.json()) as PreparedTransaction);
       setMessage("Transaction prepared. Nothing has been signed yet.");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not prepare transaction.");
+      try {
+        if (intent.token === "USDT") {
+          throw new Error("USDT is tracked in the payment intent, but the $0 public preview only sends devnet SOL.");
+        }
+        const fallbackKey = "11111111111111111111111111111111";
+        const fromPubkey = toPublicKey(walletAddress, fallbackKey);
+        const toPubkey = toPublicKey(intent.recipientAddress, fallbackKey);
+        const lamports = Math.max(1, Math.round(intent.amount * LAMPORTS_PER_SOL));
+        const { blockhash } = await connection.getLatestBlockhash("confirmed");
+        const transaction = new Transaction({ feePayer: fromPubkey, recentBlockhash: blockhash }).add(
+          SystemProgram.transfer({ fromPubkey, toPubkey, lamports })
+        );
+        setPrepared({
+          network: "devnet",
+          from: fromPubkey.toBase58(),
+          to: toPubkey.toBase58(),
+          lamports,
+          recentBlockhash: transaction.recentBlockhash ?? blockhash,
+          serializedTransaction: window.btoa(String.fromCharCode(...transaction.serialize({ requireAllSignatures: false }))),
+          explorerUrl: `https://explorer.solana.com/address/${toPubkey.toBase58()}?cluster=devnet`
+        });
+        setMessage("Hosted API unavailable, so the devnet transaction was prepared in your browser.");
+      } catch (fallbackError) {
+        setMessage(fallbackError instanceof Error ? fallbackError.message : "Could not prepare transaction.");
+      }
     } finally {
       setBusy(false);
     }
@@ -223,7 +281,15 @@ export default function App() {
       setReceipt((await response.json()) as PrivacyReceipt);
       setMessage("Privacy receipt created locally.");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not create receipt.");
+      setReceipt(
+        await createLocalReceipt({
+          intent,
+          riskReport: analysis?.riskReport,
+          invoiceText,
+          txSignature
+        })
+      );
+      setMessage("Hosted API unavailable, so the privacy receipt was created in your browser.");
     } finally {
       setBusy(false);
     }
