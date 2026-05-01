@@ -14,6 +14,9 @@ CloakPay AI is a local-first QVAC payment firewall for Solana payments. It check
 6. For wallet testers, open the devnet SOL faucet, connect a wallet on devnet, prepare the transaction, and sign/send with faucet SOL.
 7. Open the devnet explorer link.
 8. Create the privacy receipt and show the invoice hash, commitment, nullifier preview, redacted summary, and transaction signature.
+9. Show local history so testers can see their recent preview activity without an account or database.
+10. Save a feedback note, export feedback JSON, and open the prefilled GitHub issue link.
+11. Point to the production readiness panel and say mainnet is locked until audit, monitoring, support, and safer transaction controls are complete.
 
 ## Closing
 
@@ -36,3 +39,13 @@ The public Vercel page is the preview. The live QVAC OCR story is strongest in t
 ## Mainnet Positioning
 
 Mainnet is the production direction, but it is not enabled in this public preview. Real-money payments need audits, monitoring, fraud handling, support, and safer UX before users can trust it.
+
+## Tester Ask
+
+For the first 20 users, ask:
+
+- Did Try Without Wallet work in under two minutes?
+- Did the risky invoice warning make sense?
+- Did wallet connection and devnet signing work if they tested it?
+- What invoice format should CloakPay support next?
+- What would make them trust this on mainnet later?

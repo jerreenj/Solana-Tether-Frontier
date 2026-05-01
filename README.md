@@ -14,7 +14,7 @@ The build path is intentionally $0: no paid APIs, paid hosting, paid RPC, paid d
 4. Show QVAC/local analysis extracting merchant, recipient, amount, token, and memo.
 5. Show the payment firewall verdict: safe, review, or block.
 6. Wallet testers can get devnet SOL, connect a wallet, prepare/sign/send devnet SOL, and show the explorer link.
-7. Show the local privacy receipt and feedback CTA.
+7. Show the local privacy receipt, local history, and feedback loop.
 
 The story: private invoice data is analyzed locally before signing; Solana only receives the confirmed payment.
 
@@ -34,7 +34,17 @@ The story: private invoice data is analyzed locally before signing; Solana only 
 2. Ask most users to click **Try Without Wallet**.
 3. Ask wallet testers to use devnet SOL only.
 4. Collect feedback through the GitHub issue link inside the app.
-5. Fix confusing screens or failed wallet paths before sharing with 200 users.
+5. Use the in-app feedback form and JSON export for live tester sessions.
+6. Fix confusing screens or failed wallet paths before sharing with 200 users.
+
+## Preview Product Controls
+
+- First-time guide inside the app.
+- Try Without Wallet mode for users who do not have a Solana wallet.
+- Devnet SOL instructions for wallet testers.
+- Local browser history for analysis, receipt, and transaction proof.
+- Local feedback inbox with JSON export and GitHub issue handoff.
+- Production readiness panel that keeps mainnet locked until the required controls are real.
 
 ## Tech Stack
 
@@ -72,6 +82,7 @@ Live QVAC OCR should still be demoed locally with `QVAC_MOCK=0` when model setup
 
 ## API
 
+- `GET /api/health`
 - `GET /api/qvac/status`
 - `POST /api/qvac/analyze-payment`
 - `POST /api/solana/prepare`
@@ -82,3 +93,11 @@ Live QVAC OCR should still be demoed locally with `QVAC_MOCK=0` when model setup
 - Track: Tether Frontier Hackathon Track on Superteam Earn.
 - Deadline from listing: May 11, 2026.
 - Public repo: https://github.com/jerreenj/CloakPayAI-Solana-Tether
+
+## Readiness Docs
+
+- [Security policy](SECURITY.md)
+- [Production readiness](docs/PRODUCTION_READINESS.md)
+- [Mainnet readiness](docs/MAINNET_READINESS.md)
+- [QVAC proof plan](docs/QVAC_PROOF.md)
+- [Demo script](docs/DEMO_SCRIPT.md)

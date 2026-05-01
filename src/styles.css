@@ -201,6 +201,46 @@ small {
   margin-top: 4px;
 }
 
+.readiness-board {
+  background: #ffffff;
+  border: 1px solid #dce2da;
+  border-radius: 8px;
+  box-shadow: 0 14px 35px rgba(18, 30, 23, 0.05);
+  display: grid;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 16px;
+}
+
+.section-heading {
+  display: grid;
+  gap: 4px;
+}
+
+.section-heading h2 {
+  font-size: 1.08rem;
+}
+
+.readiness-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.readiness-grid div {
+  background: #f8faf7;
+  border: 1px solid #dce2da;
+  border-radius: 8px;
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+}
+
+.readiness-grid p {
+  color: #5d6b63;
+  line-height: 1.42;
+}
+
 .flow-rail div {
   align-items: center;
   border-radius: 8px;
@@ -235,6 +275,13 @@ small {
   display: grid;
   gap: 14px;
   grid-template-columns: 1.08fr 1fr 1fr;
+}
+
+.community-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 14px;
 }
 
 .panel {
@@ -449,6 +496,61 @@ code {
   width: 100%;
 }
 
+.history-list {
+  display: grid;
+  gap: 10px;
+  max-height: 430px;
+  overflow: auto;
+}
+
+.history-item {
+  background: #f8faf7;
+  border: 1px solid #dce2da;
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.history-item p {
+  color: #5d6b63;
+}
+
+.feedback-panel label {
+  color: #52655c;
+  display: grid;
+  font-size: 0.78rem;
+  font-weight: 850;
+  gap: 6px;
+  text-transform: uppercase;
+}
+
+.feedback-count {
+  align-items: center;
+  background: #f8faf7;
+  border: 1px solid #dce2da;
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+}
+
+.feedback-count strong {
+  align-items: center;
+  background: #18a56b;
+  border-radius: 999px;
+  color: #ffffff;
+  display: grid;
+  height: 32px;
+  place-items: center;
+  width: 32px;
+}
+
+.feedback-count span {
+  color: #5d6b63;
+  font-weight: 750;
+}
+
 @media (max-width: 1120px) {
   .topbar,
   .console-grid {
@@ -456,6 +558,11 @@ code {
   }
 
   .user-guide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .readiness-grid,
+  .community-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -473,6 +580,8 @@ code {
   .stack-strip,
   .flow-rail,
   .user-guide,
+  .readiness-grid,
+  .community-grid,
   .console-grid {
     grid-template-columns: 1fr;
   }

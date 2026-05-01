@@ -1,7 +1,17 @@
 import { Connection, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useEffect, useMemo, useState } from "react";
+import { clearFeedback, loadFeedback, loadHistory, saveFeedbackItem, saveHistoryItem, updateHistoryItem } from "./localStore";
 import { analyzeLocally, createLocalReceipt } from "./localAnalysis";
-import type { AnalysisResponse, PaymentIntent, PreparedTransaction, PrivacyReceipt, QvacStatus } from "./types";
+import type {
+  AnalysisResponse,
+  FeedbackCategory,
+  FeedbackItem,
+  LocalHistoryItem,
+  PaymentIntent,
+  PreparedTransaction,
+  PrivacyReceipt,
+  QvacStatus
+} from "./types";
 
 type SolanaProvider = {
   isPhantom?: boolean;
@@ -70,6 +80,20 @@ function toPublicKey(value: string, fallback: string) {
   }
 }
 
+function createId() {
+  return typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function downloadJson(fileName: string, data: unknown) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function App() {
   const [file, setFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -81,6 +105,12 @@ export default function App() {
   const [txSignature, setTxSignature] = useState("");
   const [qvacStatus, setQvacStatus] = useState<QvacStatus | null>(null);
   const [invoiceText, setInvoiceText] = useState(safeInvoice);
+  const [history, setHistory] = useState<LocalHistoryItem[]>(() => loadHistory());
+  const [currentHistoryId, setCurrentHistoryId] = useState("");
+  const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>(() => loadFeedback());
+  const [feedbackCategory, setFeedbackCategory] = useState<FeedbackCategory>("bug");
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackEmail, setFeedbackEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("Ready for local payment analysis.");
 
@@ -117,6 +147,31 @@ export default function App() {
     [qvacStatus]
   );
 
+  const productionReadiness = useMemo(
+    () => [
+      ["Mainnet payments", "Locked until audit, monitoring, rollback, and support are complete."],
+      ["Payment reliability", "Devnet path is live; mainnet needs retries, idempotency, and incident drills."],
+      ["Security review", "Internal guardrails are documented; external audit is still required."],
+      ["Accounts/history", "Free local profile and history are enabled in this browser."],
+      ["Monitoring/support", "Free Vercel/GitHub signals plus local feedback export for preview users."],
+      [
+        "QVAC proof",
+        qvacStatus?.mode === "live-qvac"
+          ? "Live local QVAC mode is detected."
+          : "Hosted preview uses fallback; record local QVAC proof with QVAC_MOCK=0."
+      ]
+    ],
+    [qvacStatus]
+  );
+
+  const feedbackIssueUrl = useMemo(() => {
+    const params = new URLSearchParams({
+      title: `Preview feedback: ${feedbackCategory}`,
+      body: `Category: ${feedbackCategory}\nContact: ${feedbackEmail || "not provided"}\n\n${feedbackText || "Write feedback here."}`
+    });
+    return `${feedbackUrl}?${params.toString()}`;
+  }, [feedbackCategory, feedbackEmail, feedbackText]);
+
   async function onFileSelected(nextFile: File | null) {
     setFile(nextFile);
     setAnalysis(null);
@@ -140,6 +195,53 @@ export default function App() {
     setMessage("Sample loaded. Run analysis to score it locally.");
   }
 
+  function rememberAnalysis(data: AnalysisResponse, nextReceipt?: PrivacyReceipt) {
+    const id = createId();
+    setCurrentHistoryId(id);
+    setHistory(
+      saveHistoryItem({
+        id,
+        createdAt: new Date().toISOString(),
+        merchant: data.intent.merchant,
+        amount: data.intent.amount,
+        token: data.intent.token,
+        verdict: data.riskReport.verdict,
+        score: data.riskReport.score,
+        mode: data.mode,
+        receiptCommitment: nextReceipt?.commitment,
+        txSignature: nextReceipt?.txSignature
+      })
+    );
+  }
+
+  function rememberReceipt(nextReceipt: PrivacyReceipt, signature = txSignature) {
+    if (!currentHistoryId) return;
+    setHistory(
+      updateHistoryItem(currentHistoryId, {
+        receiptCommitment: nextReceipt.commitment,
+        txSignature: signature || nextReceipt.txSignature
+      })
+    );
+  }
+
+  function submitLocalFeedback() {
+    const trimmed = feedbackText.trim();
+    if (!trimmed) {
+      setMessage("Write a short feedback note first.");
+      return;
+    }
+    const item: FeedbackItem = {
+      id: createId(),
+      createdAt: new Date().toISOString(),
+      category: feedbackCategory,
+      message: trimmed,
+      email: feedbackEmail.trim() || undefined
+    };
+    setFeedbackItems(saveFeedbackItem(item));
+    setFeedbackText("");
+    setMessage("Feedback saved locally. Export it or open a GitHub issue when ready.");
+  }
+
   async function tryWithoutWallet() {
     setBusy(true);
     setFile(null);
@@ -148,15 +250,15 @@ export default function App() {
     setTxSignature("");
     setInvoiceText(safeInvoice);
     const data = analyzeLocally({ text: safeInvoice, fileName: "safe-public-preview.txt", browserFallback: true });
+    const nextReceipt = await createLocalReceipt({
+      intent: data.intent,
+      riskReport: data.riskReport,
+      invoiceText: safeInvoice
+    });
     setAnalysis(data);
     setIntent(data.intent);
-    setReceipt(
-      await createLocalReceipt({
-        intent: data.intent,
-        riskReport: data.riskReport,
-        invoiceText: safeInvoice
-      })
-    );
+    setReceipt(nextReceipt);
+    rememberAnalysis(data, nextReceipt);
     setMessage("Walletless preview complete: analysis and receipt were created locally.");
     setBusy(false);
   }
@@ -185,6 +287,7 @@ export default function App() {
       setPrepared(null);
       setReceipt(null);
       setTxSignature("");
+      rememberAnalysis(data);
       setMessage(`${data.mode.toUpperCase()} analysis complete: ${verdictLabel(data.riskReport.verdict)}.`);
     } catch (error) {
       const data = analyzeLocally({
@@ -197,6 +300,7 @@ export default function App() {
       setPrepared(null);
       setReceipt(null);
       setTxSignature("");
+      rememberAnalysis(data);
       setMessage("Hosted API unavailable, so CloakPay ran the payment firewall in your browser.");
     } finally {
       setBusy(false);
@@ -278,6 +382,9 @@ export default function App() {
 
       await connection.confirmTransaction(signature, "confirmed");
       setTxSignature(signature);
+      if (currentHistoryId) {
+        setHistory(updateHistoryItem(currentHistoryId, { txSignature: signature }));
+      }
       setMessage("Devnet payment sent.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Signing failed.");
@@ -302,17 +409,19 @@ export default function App() {
         })
       });
       if (!response.ok) throw new Error(await response.text());
-      setReceipt((await response.json()) as PrivacyReceipt);
+      const nextReceipt = (await response.json()) as PrivacyReceipt;
+      setReceipt(nextReceipt);
+      rememberReceipt(nextReceipt);
       setMessage("Privacy receipt created locally.");
     } catch (error) {
-      setReceipt(
-        await createLocalReceipt({
-          intent,
-          riskReport: analysis?.riskReport,
-          invoiceText,
-          txSignature
-        })
-      );
+      const nextReceipt = await createLocalReceipt({
+        intent,
+        riskReport: analysis?.riskReport,
+        invoiceText,
+        txSignature
+      });
+      setReceipt(nextReceipt);
+      rememberReceipt(nextReceipt);
       setMessage("Hosted API unavailable, so the privacy receipt was created in your browser.");
     } finally {
       setBusy(false);
@@ -377,6 +486,21 @@ export default function App() {
             <a href={feedbackUrl} target="_blank" rel="noreferrer">
               Leave Feedback
             </a>
+          </div>
+        </section>
+
+        <section className="readiness-board" aria-label="Production readiness">
+          <div className="section-heading">
+            <small>Production path</small>
+            <h2>Mainnet stays locked until the company-grade controls are real.</h2>
+          </div>
+          <div className="readiness-grid">
+            {productionReadiness.map(([label, value]) => (
+              <div key={label}>
+                <strong>{label}</strong>
+                <p>{value}</p>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -581,6 +705,92 @@ export default function App() {
             </div>
           </section>
         </div>
+
+        <section className="community-grid" aria-label="User feedback and local account history">
+          <section className="panel history-panel">
+            <div className="panel-header">
+              <span>7</span>
+              <h2>Local User History</h2>
+            </div>
+            <p className="muted">
+              A free preview account lives in this browser only. No database, no paid storage, and no cloud profile is created.
+            </p>
+            <div className="history-list">
+              {history.map((item) => (
+                <div key={item.id} className="history-item">
+                  <div>
+                    <strong>{item.merchant}</strong>
+                    <p>
+                      {item.amount} {item.token} · {verdictLabel(item.verdict)} · {item.score}/100
+                    </p>
+                  </div>
+                  <small>{new Date(item.createdAt).toLocaleString()}</small>
+                  {item.txSignature && <code>{item.txSignature}</code>}
+                  {item.receiptCommitment && <code>{item.receiptCommitment}</code>}
+                </div>
+              ))}
+              {!history.length && <p className="muted">Run an analysis to create the first local history item.</p>}
+            </div>
+            <button type="button" disabled={!history.length} onClick={() => downloadJson("cloakpay-history.json", history)}>
+              Export History
+            </button>
+          </section>
+
+          <section className="panel feedback-panel">
+            <div className="panel-header">
+              <span>8</span>
+              <h2>Preview Feedback Loop</h2>
+            </div>
+            <label>
+              Category
+              <select value={feedbackCategory} onChange={(event) => setFeedbackCategory(event.target.value as FeedbackCategory)}>
+                <option value="bug">Bug</option>
+                <option value="wallet">Wallet signing</option>
+                <option value="invoice">Invoice parsing</option>
+                <option value="risk">Risk verdict</option>
+                <option value="mainnet">Mainnet request</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label>
+              Optional contact
+              <input value={feedbackEmail} onChange={(event) => setFeedbackEmail(event.target.value)} placeholder="email, Telegram, or Discord" />
+            </label>
+            <label>
+              Feedback
+              <textarea
+                value={feedbackText}
+                onChange={(event) => setFeedbackText(event.target.value)}
+                placeholder="What broke, confused you, or should be added before mainnet?"
+              />
+            </label>
+            <div className="button-row">
+              <button type="button" onClick={submitLocalFeedback}>
+                Save Feedback
+              </button>
+              <button type="button" disabled={!feedbackItems.length} onClick={() => downloadJson("cloakpay-feedback.json", feedbackItems)}>
+                Export Feedback
+              </button>
+            </div>
+            <a href={feedbackIssueUrl} target="_blank" rel="noreferrer">
+              Open GitHub Issue
+            </a>
+            <button
+              type="button"
+              disabled={!feedbackItems.length}
+              onClick={() => {
+                setFeedbackItems(clearFeedback());
+                setMessage("Local feedback inbox cleared.");
+              }}
+            >
+              Clear Local Inbox
+            </button>
+            <div className="feedback-count">
+              <strong>{feedbackItems.length}</strong>
+              <span>saved local feedback item{feedbackItems.length === 1 ? "" : "s"}</span>
+            </div>
+          </section>
+        </section>
       </section>
     </main>
   );

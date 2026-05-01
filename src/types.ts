@@ -74,3 +74,26 @@ export type PreparedTransaction = {
   serializedTransaction: string;
   explorerUrl: string;
 };
+
+export type LocalHistoryItem = {
+  id: string;
+  createdAt: string;
+  merchant: string;
+  amount: number;
+  token: PaymentIntent["token"];
+  verdict: RiskReport["verdict"];
+  score: number;
+  mode: AnalysisResponse["mode"];
+  txSignature?: string;
+  receiptCommitment?: string;
+};
+
+export type FeedbackCategory = "bug" | "wallet" | "invoice" | "risk" | "mainnet" | "other";
+
+export type FeedbackItem = {
+  id: string;
+  createdAt: string;
+  category: FeedbackCategory;
+  message: string;
+  email?: string;
+};
