@@ -73,6 +73,14 @@ function verdictLabel(verdict?: string) {
   return verdict.charAt(0).toUpperCase() + verdict.slice(1);
 }
 
+function displayToken(value?: string) {
+  if (!value) return "Pending";
+  return value
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("-");
+}
+
 function toPublicKey(value: string, fallback: string) {
   try {
     return new PublicKey(value);
@@ -289,7 +297,7 @@ export default function App() {
       setReceipt(null);
       setTxSignature("");
       rememberAnalysis(data);
-      setMessage(`${data.mode.toUpperCase()} analysis complete: ${verdictLabel(data.riskReport.verdict)}.`);
+      setMessage(`${displayToken(data.mode)} analysis complete: ${verdictLabel(data.riskReport.verdict)}.`);
     } catch (error) {
       const data = analyzeLocally({
         text: fallbackText,
@@ -550,7 +558,7 @@ export default function App() {
                 <div className="metric-row">
                   <div>
                     <small>Mode</small>
-                    <strong>{analysis?.mode ?? qvacStatus?.mode ?? "Pending"}</strong>
+                    <strong>{displayToken(analysis?.mode ?? qvacStatus?.mode)}</strong>
                   </div>
                   <div>
                     <small>Runtime</small>
@@ -812,8 +820,8 @@ export default function App() {
                 </select>
               </label>
               <label>
-                Optional contact
-                <input value={feedbackEmail} onChange={(event) => setFeedbackEmail(event.target.value)} placeholder="email, Telegram, or Discord" />
+                Email
+                <input value={feedbackEmail} onChange={(event) => setFeedbackEmail(event.target.value)} placeholder="Optional email, Telegram, or Discord" />
               </label>
               <label>
                 Feedback
@@ -846,7 +854,7 @@ export default function App() {
               </button>
               <div className="feedback-count">
                 <strong>{feedbackItems.length}</strong>
-                <span>saved local feedback item{feedbackItems.length === 1 ? "" : "s"}</span>
+                <span>Saved Local Feedback Item{feedbackItems.length === 1 ? "" : "s"}</span>
               </div>
             </section>
           </div>
