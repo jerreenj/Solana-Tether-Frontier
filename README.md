@@ -1,11 +1,11 @@
-<p align="center">
+<div align="center">
   <br />
-  <h1 align="center">CloakPay AI</h1>
-  <p align="center"><strong>A local-first QVAC Tether payment firewall for Solana payments.</strong></p>
-  <p align="center">
+  <h1>CloakPay AI</h1>
+  <p><strong>A local-first QVAC Tether payment firewall for Solana payments.</strong></p>
+  <p>
     Check invoice risk before a wallet signs, send only on Solana devnet for the public preview, and save a privacy-safe receipt without paid services.
   </p>
-  <p align="center">
+  <p>
     <a href="https://cloakpay-ai.vercel.app"><strong>Live App</strong></a>
     ·
     <a href="https://github.com/jerreenj/CloakPayAI-Solana-Tether"><strong>GitHub</strong></a>
@@ -14,7 +14,7 @@
     ·
     <a href="docs/SUBMISSION_CHECKLIST.md"><strong>Submission Checklist</strong></a>
   </p>
-  <p align="center">
+  <p>
     <img alt="Solana" src="https://img.shields.io/badge/Solana-Devnet-14F195?style=flat-square&labelColor=111111" />
     <img alt="QVAC" src="https://img.shields.io/badge/QVAC-Local_AI-E1E0CC?style=flat-square&labelColor=111111" />
     <img alt="Tether" src="https://img.shields.io/badge/Tether-Track-26A17B?style=flat-square&labelColor=111111" />
@@ -23,7 +23,7 @@
     <img alt="Build Cost" src="https://img.shields.io/badge/Build_Cost-%240-ffffff?style=flat-square&labelColor=111111" />
   </p>
   <br />
-</p>
+</div>
 
 ---
 
