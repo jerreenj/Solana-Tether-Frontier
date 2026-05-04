@@ -31,6 +31,32 @@ CloakPay AI checks a Solana payment before the user signs it. It analyzes an inv
 
 This is a public-preview hackathon MVP, not a mainnet payment processor. Mainnet is locked until audits, monitoring, support, and production safeguards are real.
 
+---
+
+## Live Demo
+
+**Public app:** https://cloakpay-ai.vercel.app
+
+The fastest judge path is walletless: open the app, choose **Try Without Wallet**, run the safe sample, run the suspicious sample, and compare the firewall verdicts. Wallet testers can switch to the devnet signing flow after funding a wallet with devnet SOL.
+
+| Proof | Status |
+| --- | --- |
+| Invoice/payment analysis | QVAC/local path with clearly labeled fallback mode |
+| Risk verdict | Safe, review, or block based on extracted payment fields |
+| Blockchain action | Real Solana devnet transaction preparation and wallet signing |
+| Receipt | Local invoice hash, commitment, nullifier preview, redacted summary, and transaction signature |
+| Cost | $0 build path: no paid APIs, paid RPC, paid database, paid OCR, or paid assets |
+
+## What It Does
+
+CloakPay AI turns the moment before signing into a safety checkpoint:
+
+- Extracts merchant, recipient, amount, token, memo, and suspicious wording from invoices or payment screenshots.
+- Scores payment risk before the wallet signs.
+- Blocks unclear or suspicious payment intents from moving forward without review.
+- Sends only on Solana devnet for the public preview.
+- Saves privacy-safe receipts locally for user proof without sending invoice content to a database.
+
 ## Submission Links
 
 - Live preview: https://cloakpay-ai.vercel.app
