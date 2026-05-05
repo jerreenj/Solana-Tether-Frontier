@@ -595,7 +595,7 @@ export default function App() {
               </div>
               <div>
                 <small>Wallet testers</small>
-                <strong>Use devnet only.</strong>
+                <strong>Start on devnet, switch when ready.</strong>
                 <p>Use devnet for public testing. Mainnet is available only after confirming the real-funds warning.</p>
                 <a href={faucetUrl} target="_blank" rel="noreferrer">
                   Get Devnet SOL
