@@ -10,8 +10,11 @@
     "tether",
     "solana",
     "devnet",
+    "mainnet",
     "payment-firewall",
-    "privacy"
+    "privacy",
+    "monitoring",
+    "user-accounts"
   ],
   "repository": {
     "type": "git",

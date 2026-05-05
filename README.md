@@ -3,7 +3,7 @@
   <h1>CloakPay AI</h1>
   <p><strong>A local-first QVAC Tether payment firewall for Solana payments.</strong></p>
   <p>
-    Check invoice risk before a wallet signs, send only on Solana devnet for the public preview, and save a privacy-safe receipt without paid services.
+    Check invoice risk before a wallet signs, choose devnet or mainnet-beta SOL transfer mode, and save a privacy-safe receipt without paid services.
   </p>
   <p>
     <a href="https://cloakpay-ai.vercel.app"><strong>Live App</strong></a>
@@ -27,9 +27,9 @@
 
 ---
 
-CloakPay AI checks a Solana payment before the user signs it. It analyzes an invoice or payment screenshot locally with QVAC OCR, converts extracted text into a payment intent, scores the risk, prepares a real Solana devnet transfer, and generates a privacy-safe receipt.
+CloakPay AI checks a Solana payment before the user signs it. It analyzes an invoice or payment screenshot locally with QVAC OCR, converts extracted text into a payment intent, scores the risk, prepares a real Solana SOL transfer on devnet or mainnet-beta, and generates a privacy-safe receipt.
 
-This is a public-preview hackathon MVP, not a mainnet payment processor. Mainnet is locked until audits, monitoring, support, and production safeguards are real.
+This is mainnet-capable for SOL transfers with explicit real-funds confirmation. External audit, compliance review, and support operations remain the operator's responsibility before broad real-money rollout.
 
 ---
 
@@ -37,13 +37,13 @@ This is a public-preview hackathon MVP, not a mainnet payment processor. Mainnet
 
 **Public app:** https://cloakpay-ai.vercel.app
 
-The fastest judge path is walletless: open the app, choose **Try Without Wallet**, run the safe sample, run the suspicious sample, and compare the firewall verdicts. Wallet testers can switch to the devnet signing flow after funding a wallet with devnet SOL.
+The fastest judge path is walletless: open the app, choose **Try Without Wallet**, run the safe sample, run the suspicious sample, and compare the firewall verdicts. Wallet testers can switch to devnet or mainnet-beta SOL signing after selecting the network in the app.
 
 | Proof | Status |
 | --- | --- |
 | Invoice/payment analysis | QVAC/local path with clearly labeled fallback mode |
 | Risk verdict | Safe, review, or block based on extracted payment fields |
-| Blockchain action | Real Solana devnet transaction preparation and wallet signing |
+| Blockchain action | Real Solana devnet or mainnet-beta SOL transaction preparation and wallet signing |
 | Receipt | Local invoice hash, commitment, nullifier preview, redacted summary, and transaction signature |
 | Cost | $0 build path: no paid APIs, paid RPC, paid database, paid OCR, or paid assets |
 
@@ -54,7 +54,7 @@ CloakPay AI turns the moment before signing into a safety checkpoint:
 - Extracts merchant, recipient, amount, token, memo, and suspicious wording from invoices or payment screenshots.
 - Scores payment risk before the wallet signs.
 - Blocks unclear or suspicious payment intents from moving forward without review.
-- Sends only on Solana devnet for the public preview.
+- Supports devnet and mainnet-beta SOL transfer preparation with explicit mainnet confirmation.
 - Saves privacy-safe receipts locally for user proof without sending invoice content to a database.
 
 ## Hackathon Fit
@@ -66,7 +66,7 @@ CloakPay AI is built for the Tether Frontier QVAC side track: local AI is not de
 | Technical QVAC depth | OCR/payment extraction sits directly inside the main payment flow |
 | Product value | Prevents users from blindly signing suspicious invoices or wrong payment details |
 | Innovation | Local-first AI protects payment context before any blockchain action happens |
-| Demo quality | Safe sample, risky sample, walletless preview, devnet signing, and receipt proof |
+| Demo quality | Safe sample, risky sample, walletless preview, devnet/mainnet signing, account tools, monitoring, and receipt proof |
 
 ## Submission Links
 
@@ -83,7 +83,7 @@ CloakPay AI is built for the Tether Frontier QVAC side track: local AI is not de
 3. Run the safe sample, then the risky sample, or upload a payment screenshot.
 4. Show QVAC/local analysis extracting merchant, recipient, amount, token, and memo.
 5. Show the payment firewall verdict: safe, review, or block.
-6. Wallet testers can get devnet SOL, connect a wallet, prepare/sign/send devnet SOL, and show the explorer link.
+6. Wallet testers can get devnet SOL or switch to mainnet-beta, connect a wallet, prepare/sign/send SOL, and show the explorer link.
 7. Show the local privacy receipt, local history, and feedback loop.
 
 The story: private invoice data is analyzed locally before signing; Solana only receives the confirmed payment.
@@ -92,17 +92,17 @@ The story: private invoice data is analyzed locally before signing; Solana only 
 
 - No paid AI: use QVAC SDK locally.
 - No paid OCR: use QVAC OCR or local deterministic fallback.
-- No paid RPC: use public Solana devnet RPC.
+- No paid RPC: use public Solana devnet and mainnet-beta RPC.
 - No paid database: use browser state and local runtime only.
 - No paid assets: use CSS and generated sample invoices.
-- No mainnet funds: use devnet SOL from faucet only.
-- Mainnet payments are intentionally disabled for public preview until audits, monitoring, support, and user safeguards are ready.
+- Mainnet SOL is enabled only after explicit real-funds confirmation in the wallet panel.
+- USDT transfer execution is not faked; USDT is analyzed in the payment intent, while transaction preparation currently supports SOL transfers.
 
 ## Public Preview Rollout
 
 1. Send the Vercel link to 20 users first.
 2. Ask most users to click **Try Without Wallet**.
-3. Ask wallet testers to use devnet SOL only.
+3. Ask wallet testers to start on devnet, then use mainnet-beta only if they understand the real-funds confirmation.
 4. Collect feedback through the GitHub issue link inside the app.
 5. Use the in-app feedback form and JSON export for live tester sessions.
 6. Fix confusing screens or failed wallet paths before sharing with 200 users.
@@ -111,10 +111,12 @@ The story: private invoice data is analyzed locally before signing; Solana only 
 
 - First-time guide inside the app.
 - Try Without Wallet mode for users who do not have a Solana wallet.
-- Devnet SOL instructions for wallet testers.
+- Devnet SOL instructions plus mainnet-beta SOL network selection.
 - Local browser history for analysis, receipt, and transaction proof.
+- Wallet-linked local user profile with account export.
+- Production monitor event log with export.
 - Local feedback inbox with JSON export and GitHub issue handoff.
-- Production readiness panel that keeps mainnet locked until the required controls are real.
+- Production readiness panel for mainnet, support, monitoring, and account state.
 - Section navigation for Demo, Firewall, Readiness, History, and Feedback.
 
 ## Tech Stack
@@ -122,7 +124,7 @@ The story: private invoice data is analyzed locally before signing; Solana only 
 - Frontend: Vite, React, TypeScript, Tailwind CSS, Framer Motion, Lucide icons.
 - Local API: Node.js, Express, TypeScript.
 - AI: `@qvac/sdk` OCR, with fallback mode for demo reliability.
-- Blockchain: `@solana/web3.js` on public devnet.
+- Blockchain: `@solana/web3.js` on public devnet and mainnet-beta.
 
 ## Commands
 

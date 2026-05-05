@@ -1,29 +1,25 @@
-# Mainnet Readiness Plan
+# Mainnet Readiness
 
-Mainnet is the direction for CloakPay AI, but it is not enabled in this preview.
+CloakPay AI now supports SOL transfer preparation on both Solana devnet and mainnet-beta.
 
-## Why Mainnet Is Locked
+## What Is Enabled
 
-The product touches payments. A wrong recipient, wrong amount, spoofed invoice, or broken transaction flow can cost real money. Mainnet should wait until the payment firewall is tested, monitored, and reviewed.
+- Network selection inside the wallet panel.
+- Devnet as the safer default path for public testing.
+- Mainnet-beta SOL transaction preparation through `@solana/web3.js`.
+- Explicit real-funds confirmation before mainnet transaction preparation is allowed.
+- Wallet-side signing only; CloakPay never has custody of keys or funds.
+- Mainnet explorer links after signing.
+- Local account, local history, local receipt, local monitor events, and support exports.
 
-## Required Mainnet Work
+## What Is Still Operator Responsibility
 
-- Add explicit network selection with devnet as the default.
-- Add irreversible-payment warnings before every mainnet signature.
-- Add simulation and decoded transaction review before signing.
-- Add transaction limits for early users.
-- Add retry-safe transaction state and idempotency keys.
-- Add production monitoring for API failures, wallet errors, and transaction failures.
-- Add support workflow for payment disputes, scams, and failed sends.
-- Complete external security review.
-- Document supported wallets, devices, and QVAC model requirements.
+- External security audit before broad real-money rollout.
+- Compliance, privacy policy, and support process for real users.
+- Transaction limits and incident playbook.
+- Mainnet RPC reliability strategy if free public RPC becomes unstable.
+- Full USDT token transfer execution. Current transaction preparation supports SOL only; USDT is analyzed in payment intents but not faked as an on-chain token transfer.
 
-## Acceptable Hackathon Positioning
+## Mainnet User Warning
 
-CloakPay AI is submission-ready as a devnet payment firewall MVP:
-
-- The core product behavior is real.
-- The Solana transaction is real on devnet.
-- The privacy receipt is generated locally.
-- The QVAC/local analysis path is central to the product.
-- Mainnet is correctly treated as a future production milestone.
+The app intentionally requires users to confirm that mainnet uses real funds. This confirmation is not a replacement for an audit; it is a final product guard before wallet signing.
